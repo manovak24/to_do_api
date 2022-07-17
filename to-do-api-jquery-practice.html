@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Async jQuery AJAX Practice Problem</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            min-width: 100%;
+            min-height: 100vh;
+            background-color: #F2F2F2;
+        }
+        h2 {
+            padding: 20px 10px;
+            background-color: #578661;
+            color: #fff;
+            border-radius: 15px;
+        }
+        .hero-container {
+            width: 100%;
+            height: 250px;
+            margin: auto;
+            color: white;
+            background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1483347756197-71ef80e95f73?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 100% 95%;
+            background-color: rgba(0,0,0,0.5)
+        }
+        .hero-content {
+            display: flex;
+            width: 90%;
+            height: 225px;
+            margin: auto;
+            padding-right: 10px;
+            padding-left: 5px;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .content-container {
+            width: 90%;
+            margin: 20px auto;
+        }
+        .user-container {
+            margin: 35px auto;
+            border-radius: 10px;
+        }   
+        .todo-item {
+            display: flex;
+            margin: 15px auto;
+            padding: 15px 5px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .status {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+        .green-mark {
+            border-left: 2px solid green;
+        }
+        .red-mark {
+            border-left: 2px solid red;
+        }
+        @media only screen and (min-width: 750px) {
+            .hero-content {
+                width: 75%;
+            }
+        .content-container {
+                width: 75%;
+            }
+        }
+        @media only screen and (min-width: 1000px) {
+            .hero-content {
+                width: 50%;
+            }
+        .content-container {
+                width: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+
+    <script>
+        // Adding Hero section
+        const heroContainer = $('<div>', {'class': 'hero-container'})
+        $('body').append(heroContainer);
+        const heroContent = $('<div>', {'class': 'hero-content'})
+        $(heroContainer).append(heroContent);
+
+        // below if for finding current date and conditional to determine what is to be said based on time
+        const today = new Date();
+        let currentDate = today.toLocaleDateString('en-us', { weekday:"short", year:"numeric", month:"short", day:"numeric"}).slice(0, -6);
+        const currentHour = today.getHours();
+
+        const heroTitle = $('<h1>');
+        if(currentHour < 12) {
+            heroTitle.text('Good Morning!')
+        } else if(currentHour < 18) {
+            heroTitle.text('Good Afternoon!')
+        } else (
+            heroTitle.text('Good Evening!')
+        )
+
+        // appending title and date to hero content
+        $(heroContent).append(heroTitle).append(`<h4>${currentDate}</h4>`);
+
+        // Adding content container with JS to append div elements to for CSS Styling.
+        const contentContainer = $('<div>', {'class': 'content-container'});
+        $('body').append(contentContainer);
+
+        // jQuery AJAX
+        const url = 'https://jsonplaceholder.typicode.com/todos';
+        $.ajax({
+            url: url,
+            success: function(data) {
+                console.log(data);
+                
+                // using below for loop and const variable to create object with key of userId and value containing array with 
+                const dataByUserId = {};
+                for(let item of data) {
+                    if(dataByUserId[item.userId]) {
+                        dataByUserId[item.userId].push(item);
+                    } else {
+                        dataByUserId[item.userId] = [item]
+                    }
+                }
+
+                // Step #2
+                // Create a function that will loop through and print the userID to h2 element
+                for(let key in dataByUserId) {
+                    const userContainer = $('<div>', {
+                        id: key,
+                        'class': 'user-container'
+                    }).append(`<h2>User ${key}</h2>`);
+                    contentContainer.append(userContainer);
+
+                    // Step 3
+                    // Create loop to iterate through dataByUserId to push title to p element and append to container
+                    for(let i = 0; i < dataByUserId[key].length; i++) {
+                        if(dataByUserId[key][i].userId == key) {
+                            const todoDiv = $('<div>', {
+                                'class': 'todo-item'
+                            }).appendTo(userContainer);
+                            if(dataByUserId[key][i].completed === true) {
+                                todoDiv.addClass('green-mark')
+                                todoDiv.html(`<p><p class='status'>✔</p> <p>${dataByUserId[key][i].title}</p>`);
+                            } else if (dataByUserId[key][i].completed === false) {
+                                todoDiv.addClass('red-mark')
+                                todoDiv.html(`<p class='status'>☐</p> <p>${dataByUserId[key][i].title}</p>`);
+                            }
+                        }
+                    }
+                }
+                console.log(dataByUserId)                    
+            }
+        })
+
+        
+    </script>
+</body>
+</html>
